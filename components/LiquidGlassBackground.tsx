@@ -58,3 +58,59 @@ export function LiquidGlassBackground() {
     </>
   );
 }
+
+const styles = StyleSheet.create({
+  background: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    zIndex: 0,
+  },
+  gradientOrb: {
+    position: 'absolute',
+    borderRadius: 9999,
+    overflow: 'hidden',
+    zIndex: 0,
+  },
+  orb1: {
+    width: 300,
+    height: 300,
+    top: '10%',
+    right: '-15%',
+  },
+  orb2: {
+    width: 250,
+    height: 250,
+    top: '45%',
+    left: '-20%',
+  },
+  orb3: {
+    width: 200,
+    height: 200,
+    bottom: '20%',
+    right: '10%',
+  },
+  orb4: {
+    width: 220,
+    height: 220,
+    top: '5%',
+    left: '15%',
+  },
+  orb5: {
+    width: 280,
+    height: 280,
+    top: '35%',
+    right: '-10%',
+  },
+  orb6: {
+    width: 190,
+    height: 190,
+    bottom: '10%',
+    left: '-15%',
+  },
+  orbGradient: {
+    flex: 1,
+  },
+});
