@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,7 +8,7 @@ import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
-import { fontSize, spacing, borderRadius, minTouchSize } from '@/utils/responsive';
+import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
 
 const HISTORY_KEY = '@poetry_dice_history';
@@ -22,7 +22,9 @@ export interface HistoryItem extends PoetryExcerpt {
 export default function HomeScreen() {
   const [poetry, setPoetry] = useState<PoetryExcerpt | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
   const lastShakeTime = useRef(0);
+  const { fontSizeMode, setFontSizeMode } = useFontSizeMode();
   
   // Animation values
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -125,9 +127,43 @@ export default function HomeScreen() {
       <StatusBar style="light" />
       <LiquidGlassBackground />
       
-      <View style={styles.container}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎲 Poetry Dice</Text>
         <Text style={styles.subtitle}>Discover a random poem</Text>
+        
+        {/* Settings gear button */}
+        <View style={styles.centerGearRow}>
+          <Pressable
+            style={styles.centerSettingsButton}
+            onPress={() => setShowSettings(!showSettings)}
+          >
+            <Text style={styles.settingsButtonText}>⚙️</Text>
+          </Pressable>
+        </View>
+
+        {/* Settings menu */}
+        {showSettings && (
+          <View style={styles.centerMenu}>
+            <Text style={styles.settingsHeader}>Settings</Text>
+            <Text style={styles.settingsSectionLabel}>Text Size</Text>
+            <View style={styles.segmentedControl}>
+              {(['normal', 'large'] as const).map((mode) => {
+                const selected = fontSizeMode === mode;
+                return (
+                  <Pressable
+                    key={mode}
+                    style={[styles.segment, selected && styles.segmentActive]}
+                    onPress={() => setFontSizeMode(mode)}
+                  >
+                    <Text style={[styles.segmentText, selected && styles.segmentTextActive]}>
+                      {mode === 'normal' ? 'Normal' : 'Large'}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </View>
+          </View>
+        )}
         
         <Animated.View style={{
           transform: [
@@ -169,7 +205,7 @@ export default function HomeScreen() {
         )}
         
         <Text style={styles.credit}>Idea by James Lalonde</Text>
-      </View>
+      </ScrollView>
     </SafeAreaView>
   );
 }
@@ -179,8 +215,11 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#6a73e6',
   },
-  container: {
+  scroll: {
     flex: 1,
+  },
+  container: {
+    flexGrow: 1,
     padding: spacing(16),
     alignItems: 'center',
     justifyContent: 'center',
@@ -272,10 +311,87 @@ const styles = StyleSheet.create({
     fontFamily: 'Arsenal-Bold',
   },
   credit: {
-    position: 'absolute',
-    bottom: spacing(100),
+    marginTop: spacing(20),
     color: 'rgba(255,255,255,0.6)',
     fontSize: fontSize(12),
     fontFamily: 'Arsenal-Regular',
+  },
+  centerGearRow: {
+    width: '100%',
+    alignItems: 'center',
+    marginTop: spacing(6),
+    marginBottom: spacing(6),
+  },
+  centerSettingsButton: {
+    width: minTouchSize(54),
+    height: minTouchSize(54),
+    borderRadius: borderRadius(27),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderColor: 'rgba(255,255,255,0.6)',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 5 },
+  },
+  settingsButtonText: {
+    color: '#fff',
+    fontSize: fontSize(24),
+  },
+  centerMenu: {
+    marginBottom: spacing(12),
+    padding: spacing(16),
+    borderRadius: borderRadius(16),
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    borderColor: 'rgba(255,255,255,0.6)',
+    borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
+    width: '90%',
+  },
+  settingsHeader: {
+    color: '#fff',
+    fontSize: fontSize(18),
+    fontFamily: 'Arsenal-Bold',
+    marginBottom: spacing(12),
+  },
+  settingsSectionLabel: {
+    color: 'rgba(255,255,255,0.6)',
+    fontSize: fontSize(12),
+    fontFamily: 'Arsenal-Bold',
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
+    marginBottom: spacing(8),
+  },
+  segmentedControl: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    borderRadius: borderRadius(10),
+    padding: spacing(3),
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: spacing(10),
+    borderRadius: borderRadius(8),
+    minHeight: minTouchSize(40),
+  },
+  segmentActive: {
+    backgroundColor: '#ffd700',
+  },
+  segmentText: {
+    color: 'rgba(255,255,255,0.8)',
+    fontSize: fontSize(14),
+    fontFamily: 'Arsenal-Bold',
+  },
+  segmentTextActive: {
+    color: '#1a1a1a',
   },
 });
