@@ -3,6 +3,8 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Accelerometer } from 'expo-sensors';
+import * as Haptics from 'expo-haptics';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
 import { fontSize, spacing, borderRadius, minTouchSize } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
@@ -10,6 +12,36 @@ import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
 export default function HomeScreen() {
   const [poetry, setPoetry] = useState<PoetryExcerpt | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const lastShakeTime = useRef(0);
+  
+  // Animation values
+  const buttonScale = useRef(new Animated.Value(1)).current;
+  const buttonRotate = useRef(new Animated.Value(0)).current;
+
+  useEffect(() => {
+    if (isRolling) {
+      // Rotation animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(buttonRotate, { toValue: 15, duration: 60, useNativeDriver: true }),
+          Animated.timing(buttonRotate, { toValue: -15, duration: 60, useNativeDriver: true })
+        ])
+      ).start();
+      
+      // Scale animation
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(buttonScale, { toValue: 1.15, duration: 60, useNativeDriver: true }),
+          Animated.timing(buttonScale, { toValue: 0.95, duration: 60, useNativeDriver: true })
+        ])
+      ).start();
+    } else {
+      buttonRotate.stopAnimation();
+      buttonScale.stopAnimation();
+      Animated.timing(buttonRotate, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+      Animated.timing(buttonScale, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    }
+  }, [isRolling]);
 
   const onRoll = async () => {
     setIsRolling(true);
@@ -27,7 +59,13 @@ export default function HomeScreen() {
         <Text style={styles.title}>🎲 Poetry Dice</Text>
         <Text style={styles.subtitle}>Discover a random poem</Text>
         
-        <Pressable style={styles.button} onPress={onRoll} disabled={isRolling}>
+        <Animated.View style={{
+          transform: [
+            { rotate: buttonRotate.interpolate({ inputRange: [-15, 0, 15], outputRange: ['-15deg', '0deg', '15deg'] }) },
+            { scale: buttonScale }
+          ]
+        }}>
+          <Pressable style={styles.button} onPress={onRoll} disabled={isRolling}>
           <LinearGradient
             colors={['#ee5a52', '#d94942']}
             start={{ x: 0, y: 0 }}
@@ -41,6 +79,7 @@ export default function HomeScreen() {
             )}
           </LinearGradient>
         </Pressable>
+        </Animated.View>
         
         {poetry && (
           <View style={styles.card}>
