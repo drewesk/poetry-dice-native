@@ -1,13 +1,23 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Accelerometer } from 'expo-sensors';
 import * as Haptics from 'expo-haptics';
+import * as Clipboard from 'expo-clipboard';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
 import { fontSize, spacing, borderRadius, minTouchSize } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
+
+const HISTORY_KEY = '@poetry_dice_history';
+
+export interface HistoryItem extends PoetryExcerpt {
+  rollId: string;
+  timestamp: number;
+  isFavorite?: boolean;
+}
 
 export default function HomeScreen() {
   const [poetry, setPoetry] = useState<PoetryExcerpt | null>(null);
@@ -47,8 +57,68 @@ export default function HomeScreen() {
     setIsRolling(true);
     const result = await fetchRandomPoetry();
     setPoetry(result);
+    
+    // Save to history
+    const historyItem: HistoryItem = {
+      ...result,
+      rollId: Date.now().toString(),
+      timestamp: Date.now(),
+    };
+    
+    try {
+      const stored = await AsyncStorage.getItem(HISTORY_KEY);
+      const history: HistoryItem[] = stored ? JSON.parse(stored) : [];
+      history.unshift(historyItem);
+      await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
+    } catch (e) {
+      console.error('Failed to save to history', e);
+    }
+    
     setIsRolling(false);
   };
+
+  const onCopy = async () => {
+    if (!poetry) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}`;
+    await Clipboard.setStringAsync(text);
+  };
+
+  const onShare = async () => {
+    if (!poetry) return;
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}`;
+    try {
+      await Share.share({
+        title: 'Poetry Dice',
+        message: text,
+      });
+    } catch {}
+  };
+
+  // Accelerometer for shake-to-roll
+  useEffect(() => {
+    Accelerometer.setUpdateInterval(100);
+    
+    const subscription = Accelerometer.addListener(({ x, y, z }) => {
+      const acceleration = Math.sqrt(x * x + y * y + z * z);
+      const now = Date.now();
+      
+      // Shake threshold: 1.5 g-force, Debounce: 500ms
+      if (acceleration > 1.5 && !isRolling && now - lastShakeTime.current > 500) {
+        lastShakeTime.current = now;
+        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+          .then(() => new Promise(resolve => setTimeout(resolve, 100)))
+          .then(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
+          .catch(() => {});
+        onRoll();
+      }
+    });
+
+    return () => {
+      subscription && subscription.remove();
+    };
+  }, [isRolling]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -86,6 +156,15 @@ export default function HomeScreen() {
             <Text style={styles.poetName}>{poetry.poet}</Text>
             <Text style={styles.title2}>{poetry.title}</Text>
             <Text style={styles.text}>{poetry.text}</Text>
+            
+            <View style={styles.actionsRow}>
+              <Pressable style={styles.actionButton} onPress={onCopy}>
+                <Text style={styles.actionText}>📋 Copy</Text>
+              </Pressable>
+              <Pressable style={styles.actionButton} onPress={onShare}>
+                <Text style={styles.actionText}>📤 Share</Text>
+              </Pressable>
+            </View>
           </View>
         )}
         
@@ -168,6 +247,29 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: fontSize(16),
     fontFamily: 'Arsenal-Regular',
+  },
+  actionsRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: spacing(12),
+    marginTop: spacing(12),
+  },
+  actionButton: {
+    paddingVertical: spacing(12),
+    paddingHorizontal: spacing(20),
+    borderRadius: borderRadius(24),
+    minHeight: minTouchSize(44),
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.25)',
+    borderWidth: 1.5,
+    borderColor: 'rgba(255,255,255,0.3)',
+  },
+  actionText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: fontSize(14),
+    fontFamily: 'Arsenal-Bold',
   },
   credit: {
     position: 'absolute',
