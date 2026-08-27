@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -24,7 +24,8 @@ export default function HomeScreen() {
   const [isRolling, setIsRolling] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
   const lastShakeTime = useRef(0);
-  const { fontSizeMode, setFontSizeMode } = useFontSizeMode();
+  const { fontSizeMode, setFontSizeMode, fontScaleMultiplier } = useFontSizeMode();
+  const styles = useMemo(() => createStyles(fontScaleMultiplier), [fontScaleMultiplier]);
   
   // Animation values
   const buttonScale = useRef(new Animated.Value(1)).current;
@@ -210,7 +211,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#6a73e6',

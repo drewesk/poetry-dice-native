@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useMemo } from 'react';
 import { ScrollView, View, Text, StyleSheet, Pressable, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
@@ -7,12 +7,14 @@ import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
-import { fontSize, spacing, borderRadius, minTouchSize } from '@/utils/responsive';
+import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import type { HistoryItem } from './index';
 
 const HISTORY_KEY = '@poetry_dice_history';
 
 export default function HistoryScreen() {
+  const { fontScaleMultiplier } = useFontSizeMode();
+  const styles = useMemo(() => createStyles(fontScaleMultiplier), [fontScaleMultiplier]);
   const [history, setHistory] = useState<HistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -133,7 +135,7 @@ export default function HistoryScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#6a73e6',
