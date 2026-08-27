@@ -1,19 +1,14 @@
-import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { Tabs } from 'expo-router';
 import React from 'react';
 import { Platform, Text } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { fontSize, useFontSizeMode } from '@/utils/responsive';
 
-import HomeScreen from './index';
-import HistoryScreen from './history';
-
-const Tab = createBottomTabNavigator();
-
 export default function CustomTabLayout() {
   const { fontSizeMode } = useFontSizeMode();
 
   return (
-    <Tab.Navigator
+    <Tabs
       screenOptions={{
         tabBarActiveTintColor: Colors.dark.tint,
         headerShown: false,
@@ -28,9 +23,8 @@ export default function CustomTabLayout() {
         }),
       }}
     >
-      <Tab.Screen
+      <Tabs.Screen
         name="index"
-        component={HomeScreen}
         options={{
           title: 'Home',
           tabBarIcon: ({ color }) => (
@@ -38,9 +32,8 @@ export default function CustomTabLayout() {
           ),
         }}
       />
-      <Tab.Screen
+      <Tabs.Screen
         name="history"
-        component={HistoryScreen}
         options={{
           title: 'History',
           tabBarIcon: ({ color }) => (
@@ -48,7 +41,7 @@ export default function CustomTabLayout() {
           ),
         }}
       />
-    </Tab.Navigator>
+    </Tabs>
   );
 }
 
