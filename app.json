@@ -1,11 +1,12 @@
 {
   "expo": {
-    "name": "poetry-dice-temp",
-    "slug": "poetry-dice-temp",
+    "name": "Poetry Dice",
+    "slug": "poetry-dice-native",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
+    "icon": "./assets/images/icon.png",
+    "scheme": "poetrydicenative",
+    "userInterfaceStyle": "automatic",
     "ios": {
       "supportsTablet": true
     },
