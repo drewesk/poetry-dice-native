@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
 import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import type { HistoryItem } from './index';
+import { PoetryTheme } from '@/constants/Colors';
 
 const HISTORY_KEY = '@poetry_dice_history';
 
@@ -138,7 +139,7 @@ export default function HistoryScreen() {
 const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#6a73e6',
+    backgroundColor: PoetryTheme.background.safeArea,
   },
   header: {
     flexDirection: 'row',
@@ -182,12 +183,17 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     paddingTop: spacing(8),
   },
   historyItem: {
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: PoetryTheme.glass.cardBackground,
     borderRadius: borderRadius(16),
     padding: spacing(16),
     marginBottom: spacing(12),
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: PoetryTheme.glass.cardBorder,
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
   },
   itemHeader: {
     flexDirection: 'row',
@@ -196,7 +202,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     marginBottom: spacing(4),
   },
   poetName: {
-    color: '#ffd700',
+    color: PoetryTheme.accent.primary,
     fontSize: fontSize(14),
     fontWeight: '800',
     fontFamily: 'Arsenal-Bold',
@@ -221,10 +227,10 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     alignSelf: 'flex-start',
     paddingHorizontal: spacing(12),
     paddingVertical: spacing(6),
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: PoetryTheme.glass.lightOverlay,
     borderRadius: borderRadius(12),
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: PoetryTheme.glass.cardBorder,
   },
   copyButtonText: {
     color: '#fff',

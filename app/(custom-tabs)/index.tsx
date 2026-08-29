@@ -10,6 +10,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
 import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
+import { PoetryTheme } from '@/constants/Colors';
 
 const HISTORY_KEY = '@poetry_dice_history';
 
@@ -174,7 +175,7 @@ export default function HomeScreen() {
         }}>
           <Pressable style={styles.button} onPress={onRoll} disabled={isRolling}>
           <LinearGradient
-            colors={['#ee5a52', '#d94942']}
+            colors={PoetryTheme.accent.gradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.buttonGradient}
@@ -214,7 +215,7 @@ export default function HomeScreen() {
 const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#6a73e6',
+    backgroundColor: PoetryTheme.background.safeArea,
   },
   scroll: {
     flex: 1,
@@ -226,7 +227,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: '#fff',
+    color: PoetryTheme.accent.primary,
     fontSize: fontSize(39),
     fontWeight: '800',
     marginBottom: spacing(8),
@@ -241,7 +242,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   button: {
     borderRadius: borderRadius(30),
     marginBottom: spacing(16),
-    shadowColor: '#ee5a52',
+    shadowColor: PoetryTheme.accent.primary,
     shadowOpacity: 0.4,
     shadowRadius: 12,
     shadowOffset: { width: 0, height: 6 },
@@ -263,14 +264,19 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   },
   card: {
     width: '100%',
-    backgroundColor: 'rgba(255,255,255,0.15)',
+    backgroundColor: PoetryTheme.glass.cardBackground,
     borderRadius: borderRadius(20),
     padding: spacing(20),
-    borderColor: 'rgba(255,255,255,0.4)',
+    borderColor: PoetryTheme.glass.cardBorder,
     borderWidth: 2,
+    shadowColor: '#000',
+    shadowOpacity: 0.3,
+    shadowRadius: 15,
+    shadowOffset: { width: 0, height: 8 },
+    elevation: 10,
   },
   poetName: {
-    color: '#ffd700',
+    color: PoetryTheme.accent.primary,
     fontWeight: '800',
     marginBottom: spacing(8),
     fontSize: fontSize(16),
@@ -287,6 +293,9 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     color: '#fff',
     fontSize: fontSize(16),
     fontFamily: 'Arsenal-Regular',
+    textShadowColor: 'rgba(0, 0, 0, 0.3)',
+    textShadowOffset: { width: 1, height: 1 },
+    textShadowRadius: 2,
   },
   actionsRow: {
     flexDirection: 'row',
@@ -301,9 +310,9 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     minHeight: minTouchSize(44),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.25)',
+    backgroundColor: PoetryTheme.glass.lightOverlay,
     borderWidth: 1.5,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: PoetryTheme.glass.cardBorder,
   },
   actionText: {
     color: '#fff',
@@ -329,8 +338,8 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     borderRadius: borderRadius(27),
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    borderColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: PoetryTheme.glass.lightOverlay,
+    borderColor: PoetryTheme.glass.cardBorder,
     borderWidth: 2,
     shadowColor: '#000',
     shadowOpacity: 0.25,
@@ -345,8 +354,8 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     marginBottom: spacing(12),
     padding: spacing(16),
     borderRadius: borderRadius(16),
-    backgroundColor: 'rgba(0,0,0,0.4)',
-    borderColor: 'rgba(255,255,255,0.6)',
+    backgroundColor: PoetryTheme.glass.overlay,
+    borderColor: PoetryTheme.glass.cardBorder,
     borderWidth: 2,
     shadowColor: '#000',
     shadowOpacity: 0.3,
@@ -385,7 +394,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     minHeight: minTouchSize(40),
   },
   segmentActive: {
-    backgroundColor: '#ffd700',
+    backgroundColor: PoetryTheme.accent.primary,
   },
   segmentText: {
     color: 'rgba(255,255,255,0.8)',

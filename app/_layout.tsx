@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { loadFontSizeMode } from '@/utils/responsive';
 import { fontSize, spacing } from '@/utils/responsive';
+import { PoetryTheme } from '@/constants/Colors';
 
 // Prevent the splash screen from auto-hiding before fonts are loaded
 SplashScreen.preventAutoHideAsync();
@@ -78,7 +79,7 @@ export default function RootLayout() {
   if (!loaded || !fontSizeLoaded || booting) {
     return (
       <LinearGradient
-        colors={["#4c55d6", "#6a73e6"]}
+        colors={[PoetryTheme.background.gradient[0], PoetryTheme.background.gradient[2]]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.splashContainer}
