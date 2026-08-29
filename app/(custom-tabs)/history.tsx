@@ -91,6 +91,10 @@ export default function HistoryScreen() {
     }
   };
 
+  // Split history into favorites and recent
+  const favorites = history.filter(item => item.isFavorite);
+  const recent = history.filter(item => !item.isFavorite);
+
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar style="light" />
@@ -115,21 +119,47 @@ export default function HistoryScreen() {
         </View>
       ) : (
         <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent}>
-          {history.map((item) => (
-            <View key={item.rollId} style={styles.historyItem}>
-              <View style={styles.itemHeader}>
-                <Text style={styles.poetName}>{item.poet}</Text>
-                <Pressable onPress={() => toggleFavorite(item.rollId)}>
-                  <Text style={styles.starIcon}>{item.isFavorite ? '⭐' : '☆'}</Text>
-                </Pressable>
-              </View>
-              <Text style={styles.titleText}>{item.title}</Text>
-              <Text style={styles.excerptText} numberOfLines={2}>{item.text}</Text>
-              <Pressable style={styles.copyButton} onPress={() => onCopy(item)}>
-                <Text style={styles.copyButtonText}>📋 Copy</Text>
-              </Pressable>
-            </View>
-          ))}
+          {favorites.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>⭐ Favorites</Text>
+              {favorites.map((item) => (
+                <View key={item.rollId} style={styles.historyItem}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.poetName}>{item.poet}</Text>
+                    <Pressable onPress={() => toggleFavorite(item.rollId)}>
+                      <Text style={styles.starIcon}>{item.isFavorite ? '⭐' : '☆'}</Text>
+                    </Pressable>
+                  </View>
+                  <Text style={styles.titleText}>{item.title}</Text>
+                  <Text style={styles.excerptText} numberOfLines={2}>{item.text}</Text>
+                  <Pressable style={styles.copyButton} onPress={() => onCopy(item)}>
+                    <Text style={styles.copyButtonText}>📋 Copy</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
+
+          {recent.length > 0 && (
+            <>
+              <Text style={styles.sectionTitle}>🕐 Recent</Text>
+              {recent.map((item) => (
+                <View key={item.rollId} style={styles.historyItem}>
+                  <View style={styles.itemHeader}>
+                    <Text style={styles.poetName}>{item.poet}</Text>
+                    <Pressable onPress={() => toggleFavorite(item.rollId)}>
+                      <Text style={styles.starIcon}>{item.isFavorite ? '⭐' : '☆'}</Text>
+                    </Pressable>
+                  </View>
+                  <Text style={styles.titleText}>{item.title}</Text>
+                  <Text style={styles.excerptText} numberOfLines={2}>{item.text}</Text>
+                  <Pressable style={styles.copyButton} onPress={() => onCopy(item)}>
+                    <Text style={styles.copyButtonText}>📋 Copy</Text>
+                  </Pressable>
+                </View>
+              ))}
+            </>
+          )}
         </ScrollView>
       )}
     </SafeAreaView>
@@ -181,6 +211,15 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   scrollContent: {
     padding: spacing(16),
     paddingTop: spacing(8),
+  },
+  sectionTitle: {
+    color: PoetryTheme.accent.primary,
+    fontSize: fontSize(18),
+    fontWeight: '800',
+    fontFamily: 'Arsenal-Bold',
+    marginTop: spacing(16),
+    marginBottom: spacing(12),
+    paddingLeft: spacing(4),
   },
   historyItem: {
     backgroundColor: PoetryTheme.glass.cardBackground,
