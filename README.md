@@ -2,7 +2,7 @@
 
 Discover random poems with a roll of the dice. A React Native mobile app for iOS and Android.
 
-**Original Idea by James Lalonde**
+**App concept by James Lalonde**
 
 ## Features
 

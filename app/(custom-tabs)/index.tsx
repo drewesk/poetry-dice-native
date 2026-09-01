@@ -206,7 +206,7 @@ export default function HomeScreen() {
           </View>
         )}
         
-        <Text style={styles.credit}>Idea by James Lalonde</Text>
+        <Text style={styles.credit}>App concept by James Lalonde</Text>
       </ScrollView>
     </SafeAreaView>
   );
