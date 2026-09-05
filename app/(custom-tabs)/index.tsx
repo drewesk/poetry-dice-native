@@ -23,6 +23,7 @@ export interface HistoryItem extends PoetryExcerpt {
 export default function HomeScreen() {
   const [poetry, setPoetry] = useState<PoetryExcerpt | null>(null);
   const [isRolling, setIsRolling] = useState(false);
+  const [rollError, setRollError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
   const lastShakeTime = useRef(0);
   const { fontSizeMode, setFontSizeMode, fontScaleMultiplier } = useFontSizeMode();
@@ -58,27 +59,32 @@ export default function HomeScreen() {
   }, [isRolling]);
 
   const onRoll = async () => {
+    if (isRolling) return;
+
     setIsRolling(true);
-    const result = await fetchRandomPoetry();
-    setPoetry(result);
-    
-    // Save to history
-    const historyItem: HistoryItem = {
-      ...result,
-      rollId: Date.now().toString(),
-      timestamp: Date.now(),
-    };
-    
+    setRollError(null);
+
     try {
+      const result = await fetchRandomPoetry();
+      setPoetry(result);
+
+      // Save to history only after receiving a fully credited excerpt.
+      const historyItem: HistoryItem = {
+        ...result,
+        rollId: Date.now().toString(),
+        timestamp: Date.now(),
+      };
+
       const stored = await AsyncStorage.getItem(HISTORY_KEY);
       const history: HistoryItem[] = stored ? JSON.parse(stored) : [];
       history.unshift(historyItem);
       await AsyncStorage.setItem(HISTORY_KEY, JSON.stringify(history));
     } catch (e) {
-      console.error('Failed to save to history', e);
+      console.error('Failed to roll poetry', e);
+      setRollError('Could not find a fully credited excerpt. Try rolling again.');
+    } finally {
+      setIsRolling(false);
     }
-    
-    setIsRolling(false);
   };
 
   const onCopy = async () => {
@@ -188,6 +194,10 @@ export default function HomeScreen() {
           </LinearGradient>
         </Pressable>
         </Animated.View>
+
+        {rollError && (
+          <Text style={styles.errorText}>{rollError}</Text>
+        )}
         
         {poetry && (
           <View style={styles.card}>
@@ -261,6 +271,13 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     fontWeight: '800',
     fontSize: fontSize(20),
     fontFamily: 'Arsenal-Bold',
+  },
+  errorText: {
+    color: 'rgba(255,255,255,0.85)',
+    fontSize: fontSize(13),
+    fontFamily: 'Arsenal-Regular',
+    marginBottom: spacing(16),
+    textAlign: 'center',
   },
   card: {
     width: '100%',
