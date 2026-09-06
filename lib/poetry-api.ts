@@ -23,10 +23,22 @@ const POETRY_API_BASE_URL =
 
 const MAX_RANDOM_POETRY_ATTEMPTS = 5;
 
+const CONTRIBUTOR_ROLE_PATTERN = /\[(?:compiler|contributor|editor|illustrator|translator)[^\]]*\]/i;
+
+function getDisplayPoet(author: string): string {
+  const authorParts = author.split(';').map(part => part.trim()).filter(Boolean);
+  const poetPart = authorParts.find(part => !CONTRIBUTOR_ROLE_PATTERN.test(part));
+
+  if (!poetPart) return 'Unknown poet';
+
+  return poetPart.replace(/\s*\[[^\]]+\]/g, '').trim() || 'Unknown poet';
+}
+
 function mapApiResponseToPoetryExcerpt(data: PoetryApiResponse): PoetryExcerpt | null {
   const text = typeof data.text === 'string' ? data.text.trim() : '';
   const source = data.source;
-  const poet = typeof source?.author === 'string' ? source.author.trim() : '';
+  const rawPoet = typeof source?.author === 'string' ? source.author.trim() : '';
+  const poet = rawPoet ? getDisplayPoet(rawPoet) : '';
   const title = typeof source?.poemTitle === 'string' ? source.poemTitle.trim() : '';
   const collectionTitle = typeof source?.title === 'string' ? source.title.trim() : '';
   const gutenbergId = typeof source?.gutenbergId === 'string' ? source.gutenbergId.trim() : '';

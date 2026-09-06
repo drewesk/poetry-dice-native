@@ -90,14 +90,14 @@ export default function HomeScreen() {
   const onCopy = async () => {
     if (!poetry) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}`;
+    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}\nSource: ${poetry.source}`;
     await Clipboard.setStringAsync(text);
   };
 
   const onShare = async () => {
     if (!poetry) return;
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}`;
+    const text = `"${poetry.text}" — ${poetry.title} by ${poetry.poet}\nSource: ${poetry.source}`;
     try {
       await Share.share({
         title: 'Poetry Dice',
@@ -203,6 +203,7 @@ export default function HomeScreen() {
           <View style={styles.card}>
             <Text style={styles.poetName}>{poetry.poet}</Text>
             <Text style={styles.title2}>{poetry.title}</Text>
+            <Text style={styles.sourceText}>{poetry.source}</Text>
             <Text style={styles.text}>{poetry.text}</Text>
             
             <View style={styles.actionsRow}>
@@ -305,6 +306,12 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     fontSize: fontSize(14),
     marginBottom: spacing(8),
     fontFamily: 'Arsenal-Italic',
+  },
+  sourceText: {
+    color: 'rgba(255,255,255,0.62)',
+    fontSize: fontSize(12),
+    marginBottom: spacing(12),
+    fontFamily: 'Arsenal-Regular',
   },
   text: {
     color: '#fff',

@@ -60,7 +60,7 @@ export default function HistoryScreen() {
 
   const onCopy = useCallback(async (item: HistoryItem) => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    const text = `"${item.text}" — ${item.title} by ${item.poet}`;
+    const text = `"${item.text}" — ${item.title} by ${item.poet}\nSource: ${item.source}`;
     await Clipboard.setStringAsync(text);
   }, []);
 
@@ -131,6 +131,7 @@ export default function HistoryScreen() {
                     </Pressable>
                   </View>
                   <Text style={styles.titleText}>{item.title}</Text>
+                  <Text style={styles.sourceText}>{item.source}</Text>
                   <Text style={styles.excerptText} numberOfLines={2}>{item.text}</Text>
                   <Pressable style={styles.copyButton} onPress={() => onCopy(item)}>
                     <Text style={styles.copyButtonText}>📋 Copy</Text>
@@ -152,6 +153,7 @@ export default function HistoryScreen() {
                     </Pressable>
                   </View>
                   <Text style={styles.titleText}>{item.title}</Text>
+                  <Text style={styles.sourceText}>{item.source}</Text>
                   <Text style={styles.excerptText} numberOfLines={2}>{item.text}</Text>
                   <Pressable style={styles.copyButton} onPress={() => onCopy(item)}>
                     <Text style={styles.copyButtonText}>📋 Copy</Text>
@@ -255,6 +257,12 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: spacing(8),
     fontFamily: 'Arsenal-Italic',
+  },
+  sourceText: {
+    color: 'rgba(255,255,255,0.55)',
+    fontSize: fontSize(11),
+    marginBottom: spacing(8),
+    fontFamily: 'Arsenal-Regular',
   },
   excerptText: {
     color: 'rgba(255,255,255,0.9)',
