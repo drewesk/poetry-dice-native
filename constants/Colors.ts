@@ -24,14 +24,14 @@ export const Colors = {
 export const PoetryTheme = {
   // Background gradients
   background: {
-    gradient: ['#1a1a1d', '#2d2d34', '#3a3a44', '#4a4a54', '#2a2a30'],
+    gradient: ['#1a1a1d', '#2d2d34', '#3a3a44', '#4a4a54', '#2a2a30'] as const,
     safeArea: '#1a1a1d',
   },
   
   // Amber literary accent
   accent: {
     primary: '#d4a574',
-    gradient: ['#c49961', '#a67c52'],
+    gradient: ['#c49961', '#a67c52'] as const,
     light: '#e6c79d',
     dark: '#9d7a54',
   },

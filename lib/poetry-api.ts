@@ -20,6 +20,7 @@ interface PoetryApiResponse {
 
 const POETRY_API_BASE_URL =
   process.env.EXPO_PUBLIC_POETRY_API_BASE_URL ?? 'http://localhost:3000';
+const POETRY_API_KEY = process.env.EXPO_PUBLIC_POETRY_API_KEY;
 
 const MAX_RANDOM_POETRY_ATTEMPTS = 5;
 
@@ -64,9 +65,10 @@ export async function fetchRandomPoetry(): Promise<PoetryExcerpt> {
 
   for (let attempt = 0; attempt < MAX_RANDOM_POETRY_ATTEMPTS; attempt++) {
     try {
-      const response = await fetch(`${POETRY_API_BASE_URL.replace(/\/$/, '')}/poetry/random`, {
-        headers: { Accept: 'application/json' },
-      });
+      const headers: Record<string, string> = { Accept: 'application/json' };
+      if (POETRY_API_KEY) headers['x-api-key'] = POETRY_API_KEY;
+
+      const response = await fetch(`${POETRY_API_BASE_URL.replace(/\/$/, '')}/poetry/random`, { headers });
 
       if (!response.ok) {
         throw new Error(`Poetry API returned ${response.status}`);
