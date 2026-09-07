@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share, 
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Accelerometer } from 'expo-sensors';
+// import { Accelerometer } from 'expo-sensors';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -25,7 +25,9 @@ export default function HomeScreen() {
   const [isRolling, setIsRolling] = useState(false);
   const [rollError, setRollError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  const lastShakeTime = useRef(0);
+  // Shake-to-roll is intentionally paused until the UI tells users this gesture exists.
+  // Re-enable the commented Accelerometer import/ref/effect and add NSMotionUsageDescription when bringing it back.
+  // const lastShakeTime = useRef(0);
   const { fontSizeMode, setFontSizeMode, fontScaleMultiplier } = useFontSizeMode();
   const styles = useMemo(() => createStyles(fontScaleMultiplier), [fontScaleMultiplier]);
   
@@ -106,29 +108,30 @@ export default function HomeScreen() {
     } catch {}
   };
 
-  // Accelerometer for shake-to-roll
-  useEffect(() => {
-    Accelerometer.setUpdateInterval(100);
-    
-    const subscription = Accelerometer.addListener(({ x, y, z }) => {
-      const acceleration = Math.sqrt(x * x + y * y + z * z);
-      const now = Date.now();
-      
-      // Shake threshold: 1.5 g-force, Debounce: 500ms
-      if (acceleration > 1.5 && !isRolling && now - lastShakeTime.current > 500) {
-        lastShakeTime.current = now;
-        Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-          .then(() => new Promise(resolve => setTimeout(resolve, 100)))
-          .then(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
-          .catch(() => {});
-        onRoll();
-      }
-    });
-
-    return () => {
-      subscription && subscription.remove();
-    };
-  }, [isRolling]);
+  // Accelerometer for shake-to-roll.
+  // Temporarily commented out because Poetry Dice does not currently explain this gesture to users.
+  // useEffect(() => {
+  //   Accelerometer.setUpdateInterval(100);
+  //
+  //   const subscription = Accelerometer.addListener(({ x, y, z }) => {
+  //     const acceleration = Math.sqrt(x * x + y * y + z * z);
+  //     const now = Date.now();
+  //
+  //     // Shake threshold: 1.5 g-force, Debounce: 500ms
+  //     if (acceleration > 1.5 && !isRolling && now - lastShakeTime.current > 500) {
+  //       lastShakeTime.current = now;
+  //       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+  //         .then(() => new Promise(resolve => setTimeout(resolve, 100)))
+  //         .then(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
+  //         .catch(() => {});
+  //       onRoll();
+  //     }
+  //   });
+  //
+  //   return () => {
+  //     subscription && subscription.remove();
+  //   };
+  // }, [isRolling]);
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>

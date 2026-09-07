@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text } from 'react-native';
+import { Platform, Text, type ColorValue } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { fontSize, useFontSizeMode } from '@/utils/responsive';
 
@@ -46,7 +46,7 @@ export default function CustomTabLayout() {
 }
 
 // Simple icon component using emoji
-function TabIcon({ name, color }: { name: string; color: string }) {
+function TabIcon({ name, color }: { name: string; color: ColorValue }) {
   const icons: Record<string, string> = {
     'house.fill': '🏠',
     'clock.fill': '🕐',

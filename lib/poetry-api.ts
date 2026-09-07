@@ -1,3 +1,5 @@
+import { Platform } from 'react-native';
+
 export interface PoetryExcerpt {
   id: string;
   poet: string;
@@ -18,13 +20,23 @@ interface PoetryApiResponse {
   };
 }
 
-const POETRY_API_BASE_URL =
-  process.env.EXPO_PUBLIC_POETRY_API_BASE_URL ?? 'http://localhost:3000';
+const POETRY_API_BASE_URL = getPoetryApiBaseUrl();
 const POETRY_API_KEY = process.env.EXPO_PUBLIC_POETRY_API_KEY;
 
 const MAX_RANDOM_POETRY_ATTEMPTS = 5;
 
 const CONTRIBUTOR_ROLE_PATTERN = /\[(?:compiler|contributor|editor|illustrator|translator)[^\]]*\]/i;
+
+function getPoetryApiBaseUrl(): string {
+  const configuredUrl = process.env.EXPO_PUBLIC_POETRY_API_BASE_URL?.trim();
+  if (configuredUrl) return configuredUrl;
+
+  if (__DEV__ && Platform.OS === 'ios') {
+    return 'http://localhost:3000';
+  }
+
+  throw new Error('Missing EXPO_PUBLIC_POETRY_API_BASE_URL');
+}
 
 function getDisplayPoet(author: string): string {
   const authorParts = author.split(';').map(part => part.trim()).filter(Boolean);
@@ -45,18 +57,16 @@ function mapApiResponseToPoetryExcerpt(data: PoetryApiResponse): PoetryExcerpt |
   const gutenbergId = typeof source?.gutenbergId === 'string' ? source.gutenbergId.trim() : '';
   const poemId = typeof source?.poemId === 'string' ? source.poemId.trim() : '';
 
-  if (!text || !poet || !title || !gutenbergId || !poemId) {
+  if (!text || !poet || !gutenbergId || !poemId) {
     return null;
   }
 
   return {
     id: poemId,
     poet,
-    title,
+    title: title || collectionTitle || 'Untitled poem',
     text,
-    source: collectionTitle
-      ? `${collectionTitle} · Project Gutenberg #${gutenbergId}`
-      : `Project Gutenberg #${gutenbergId}`,
+    source: collectionTitle || 'Public domain poetry',
   };
 }
 
