@@ -20,7 +20,76 @@ export interface HistoryItem extends PoetryExcerpt {
   isFavorite?: boolean;
 }
 
+function Dice({ value, rolling, uiStyles }: { value: number; rolling: boolean; uiStyles: ReturnType<typeof createStyles> }) {
+  const map: Record<number, string> = { 1: '⚀', 2: '⚁', 3: '⚂', 4: '⚃', 5: '⚄', 6: '⚅' };
+
+  const rot = useRef(new Animated.Value(0)).current;
+  const scale = useRef(new Animated.Value(1)).current;
+  const rotAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+  const scaleAnimationRef = useRef<Animated.CompositeAnimation | null>(null);
+
+  useEffect(() => {
+    if (rolling) {
+      rotAnimationRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(rot, { toValue: 15, duration: 60, useNativeDriver: true }),
+          Animated.timing(rot, { toValue: -15, duration: 60, useNativeDriver: true })
+        ])
+      );
+      rotAnimationRef.current.start();
+
+      scaleAnimationRef.current = Animated.loop(
+        Animated.sequence([
+          Animated.timing(scale, { toValue: 1.15, duration: 60, useNativeDriver: true }),
+          Animated.timing(scale, { toValue: 0.95, duration: 60, useNativeDriver: true })
+        ])
+      );
+      scaleAnimationRef.current.start();
+    } else {
+      if (rotAnimationRef.current) {
+        rotAnimationRef.current.stop();
+        rotAnimationRef.current = null;
+      }
+      if (scaleAnimationRef.current) {
+        scaleAnimationRef.current.stop();
+        scaleAnimationRef.current = null;
+      }
+
+      Animated.timing(rot, { toValue: 0, duration: 300, useNativeDriver: true }).start();
+      Animated.timing(scale, { toValue: 1, duration: 300, useNativeDriver: true }).start();
+    }
+  }, [rolling, rot, scale]);
+
+  const animStyle = {
+    transform: [
+      {
+        rotate: rot.interpolate({
+          inputRange: [-15, 0, 15],
+          outputRange: ['-15deg', '0deg', '15deg']
+        })
+      },
+      { scale }
+    ]
+  };
+
+  return (
+    <Animated.View style={[uiStyles.diceContainer, animStyle]}>
+      <LinearGradient
+        colors={['#ffffff', '#f0f0f0']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 1 }}
+        style={uiStyles.diceGradient}
+      >
+        <View style={uiStyles.diceBorder}>
+          <Text style={uiStyles.diceFace}>{map[value] || '⚀'}</Text>
+        </View>
+      </LinearGradient>
+    </Animated.View>
+  );
+}
+
 export default function HomeScreen() {
+  const [dice, setDice] = useState<[number, number]>([1, 1]);
   const [poetry, setPoetry] = useState<PoetryExcerpt | null>(null);
   const [isRolling, setIsRolling] = useState(false);
   const [rollError, setRollError] = useState<string | null>(null);
@@ -34,6 +103,7 @@ export default function HomeScreen() {
   // Animation values
   const buttonScale = useRef(new Animated.Value(1)).current;
   const buttonRotate = useRef(new Animated.Value(0)).current;
+  const rollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     if (isRolling) {
@@ -58,13 +128,40 @@ export default function HomeScreen() {
       Animated.timing(buttonRotate, { toValue: 0, duration: 300, useNativeDriver: true }).start();
       Animated.timing(buttonScale, { toValue: 1, duration: 300, useNativeDriver: true }).start();
     }
-  }, [isRolling]);
+  }, [buttonRotate, buttonScale, isRolling]);
+
+  useEffect(() => {
+    return () => {
+      if (rollTimer.current) {
+        clearInterval(rollTimer.current);
+        rollTimer.current = null;
+      }
+    };
+  }, []);
+
+  const rollDiceOnce = () => {
+    setDice([Math.floor(Math.random() * 6) + 1, Math.floor(Math.random() * 6) + 1]);
+  };
 
   const onRoll = async () => {
     if (isRolling) return;
 
     setIsRolling(true);
     setRollError(null);
+
+    let ticks = 0;
+    rollDiceOnce();
+    if (rollTimer.current) {
+      clearInterval(rollTimer.current);
+    }
+    rollTimer.current = setInterval(() => {
+      rollDiceOnce();
+      ticks++;
+      if (ticks > 10 && rollTimer.current) {
+        clearInterval(rollTimer.current);
+        rollTimer.current = null;
+      }
+    }, 100);
 
     try {
       const result = await fetchRandomPoetry();
@@ -175,6 +272,11 @@ export default function HomeScreen() {
             </View>
           </View>
         )}
+
+        <View style={styles.diceRow}>
+          <Dice value={dice[0]} rolling={isRolling} uiStyles={styles} />
+          <Dice value={dice[1]} rolling={isRolling} uiStyles={styles} />
+        </View>
         
         <Animated.View style={{
           transform: [
@@ -252,6 +354,41 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     marginBottom: spacing(40),
     fontSize: fontSize(14),
     fontFamily: 'Arsenal-Regular',
+  },
+  diceRow: {
+    flexDirection: 'row',
+    gap: spacing(20),
+    marginBottom: spacing(20),
+  },
+  diceContainer: {
+    borderRadius: borderRadius(20),
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 8 },
+    shadowRadius: 16,
+    shadowOpacity: 0.3,
+    elevation: 12,
+  },
+  diceGradient: {
+    borderRadius: borderRadius(20),
+    padding: 3,
+  },
+  diceBorder: {
+    backgroundColor: '#fff',
+    borderRadius: borderRadius(17),
+    borderWidth: 2,
+    borderColor: 'rgba(139, 92, 246, 0.2)',
+    shadowColor: '#8B5CF6',
+    shadowOffset: { width: 0, height: 0 },
+    shadowRadius: 8,
+    shadowOpacity: 0.3,
+  },
+  diceFace: {
+    fontSize: fontSize(64),
+    color: '#333',
+    paddingVertical: spacing(16),
+    paddingHorizontal: spacing(24),
+    textAlign: 'center',
+    fontWeight: '700',
   },
   button: {
     borderRadius: borderRadius(30),
