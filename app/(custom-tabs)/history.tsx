@@ -189,7 +189,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   clearButton: {
     paddingHorizontal: spacing(12),
     paddingVertical: spacing(8),
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(255,255,255,0.35)',
     borderRadius: borderRadius(8),
   },
   clearButtonText: {
@@ -225,7 +225,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     paddingLeft: spacing(4),
   },
   historyItem: {
-    backgroundColor: PoetryTheme.glass.cardBackground,
+    backgroundColor: 'rgba(255, 255, 255, 0.18)',
     borderRadius: borderRadius(16),
     padding: spacing(16),
     marginBottom: spacing(12),
@@ -244,7 +244,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     marginBottom: spacing(4),
   },
   poetName: {
-    color: PoetryTheme.accent.primary,
+    color: '#ffd89b',
     fontSize: fontSize(14),
     fontWeight: '800',
     fontFamily: 'Arsenal-Bold',

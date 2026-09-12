@@ -7,7 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { PoetryBackground } from '@/components/PoetryBackground';
+import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
 import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
 import { PoetryTheme } from '@/constants/Colors';
@@ -240,7 +240,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar style="light" />
-      <PoetryBackground />
+      <LiquidGlassBackground />
       
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎲 Poetry Dice</Text>
