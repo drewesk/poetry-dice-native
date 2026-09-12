@@ -7,10 +7,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
+import { PoetryBackground } from '@/components/PoetryBackground';
 import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import { fetchRandomPoetry, type PoetryExcerpt } from '@/lib/poetry-api';
 import { PoetryTheme } from '@/constants/Colors';
+import { useNetworkStatus } from '@/hooks/useNetworkStatus';
+import { preloadOfflinePoems } from '@/lib/offline-api';
 
 const HISTORY_KEY = '@poetry_dice_history';
 
@@ -99,11 +101,16 @@ export default function HomeScreen() {
   // const lastShakeTime = useRef(0);
   const { fontSizeMode, setFontSizeMode, fontScaleMultiplier } = useFontSizeMode();
   const styles = useMemo(() => createStyles(fontScaleMultiplier), [fontScaleMultiplier]);
+  const networkStatus = useNetworkStatus();
   
   // Animation values
   const buttonScale = useRef(new Animated.Value(1)).current;
   const buttonRotate = useRef(new Animated.Value(0)).current;
   const rollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    preloadOfflinePoems().catch(console.error);
+  }, []);
 
   useEffect(() => {
     if (isRolling) {
@@ -233,7 +240,7 @@ export default function HomeScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar style="light" />
-      <LiquidGlassBackground />
+      <PoetryBackground />
       
       <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎲 Poetry Dice</Text>
@@ -273,6 +280,12 @@ export default function HomeScreen() {
           </View>
         )}
 
+        {(networkStatus.isInternetReachable === false || !networkStatus.isConnected) && (
+          <View style={styles.offlineIndicator}>
+            <Text style={styles.offlineText}>📵 Offline Mode</Text>
+          </View>
+        )}
+
         <View style={styles.diceRow}>
           <Dice value={dice[0]} rolling={isRolling} uiStyles={styles} />
           <Dice value={dice[1]} rolling={isRolling} uiStyles={styles} />
@@ -284,7 +297,13 @@ export default function HomeScreen() {
             { scale: buttonScale }
           ]
         }}>
-          <Pressable style={styles.button} onPress={onRoll} disabled={isRolling}>
+          <Pressable 
+            style={styles.button} 
+            onPress={onRoll} 
+            onPressIn={() => Animated.spring(buttonScale, { toValue: 0.92, useNativeDriver: true }).start()}
+            onPressOut={() => Animated.spring(buttonScale, { toValue: 1, useNativeDriver: true }).start()}
+            disabled={isRolling}
+          >
           <LinearGradient
             colors={PoetryTheme.accent.gradient}
             start={{ x: 0, y: 0 }}
@@ -335,6 +354,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   },
   scroll: {
     flex: 1,
+    zIndex: 2,
   },
   container: {
     flexGrow: 1,
@@ -343,7 +363,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     justifyContent: 'center',
   },
   title: {
-    color: PoetryTheme.accent.primary,
+    color: '#fff',
     fontSize: fontSize(39),
     fontWeight: '800',
     marginBottom: spacing(8),
@@ -373,18 +393,18 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     padding: 3,
   },
   diceBorder: {
-    backgroundColor: '#fff',
+    backgroundColor: '#f5e6d3',
     borderRadius: borderRadius(17),
     borderWidth: 2,
-    borderColor: 'rgba(139, 92, 246, 0.2)',
-    shadowColor: '#8B5CF6',
+    borderColor: 'rgba(139, 115, 85, 0.3)',
+    shadowColor: '#8b7355',
     shadowOffset: { width: 0, height: 0 },
     shadowRadius: 8,
     shadowOpacity: 0.3,
   },
   diceFace: {
     fontSize: fontSize(64),
-    color: '#333',
+    color: '#3a2d23',
     paddingVertical: spacing(16),
     paddingHorizontal: spacing(24),
     textAlign: 'center',
@@ -567,5 +587,17 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   },
   segmentTextActive: {
     color: '#1a1a1a',
+  },
+  offlineIndicator: {
+    paddingHorizontal: spacing(12),
+    paddingVertical: spacing(6),
+    borderRadius: borderRadius(16),
+    backgroundColor: 'rgba(212, 165, 116, 0.9)',
+    marginBottom: spacing(12),
+  },
+  offlineText: {
+    color: '#1a1a1a',
+    fontSize: fontSize(12),
+    fontWeight: '700',
   },
 });

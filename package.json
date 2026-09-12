@@ -1,9 +1,10 @@
 {
   "name": "poetry-dice-native",
   "main": "expo-router/entry",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "dependencies": {
     "@react-native-async-storage/async-storage": "^2.2.0",
+    "@react-native-community/netinfo": "^11.4.1",
     "expo": "~57.0.20",
     "expo-clipboard": "~57.0.1",
     "expo-constants": "^57.0.17",

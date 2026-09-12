@@ -2,14 +2,14 @@
   "expo": {
     "name": "Poetry Dice",
     "slug": "poetry-dice-native",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "poetrydicenative",
     "userInterfaceStyle": "automatic",
     "ios": {
       "bundleIdentifier": "com.drewesk.poetrydicenative",
-      "buildNumber": "1",
+      "buildNumber": "2",
       "supportsTablet": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false

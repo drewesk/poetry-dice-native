@@ -1,4 +1,5 @@
 import { Platform } from 'react-native';
+import { fetchOfflinePoem } from './offline-api';
 
 export interface PoetryExcerpt {
   id: string;
@@ -93,6 +94,13 @@ export async function fetchRandomPoetry(): Promise<PoetryExcerpt> {
     } catch (error) {
       lastError = error;
     }
+  }
+
+  console.warn('[PoetryAPI] API failed, attempting offline fallback');
+  const offlinePoem = await fetchOfflinePoem();
+  
+  if (offlinePoem) {
+    return offlinePoem;
   }
 
   if (lastError instanceof Error) {

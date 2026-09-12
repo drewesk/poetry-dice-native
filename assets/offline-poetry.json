@@ -1,0 +1,247 @@
+{
+  "version": "1.0",
+  "generatedAt": "2026-09-12T00:00:00.000Z",
+  "totalPoems": 30,
+  "poems": [
+    {
+      "id": "dickinson-hope-1",
+      "poet": "Emily Dickinson",
+      "title": "Hope is the thing with feathers",
+      "text": "Hope is the thing with feathers\nThat perches in the soul,\nAnd sings the tune without the words,\nAnd never stops at all.",
+      "source": "Public domain poetry",
+      "year": "1891"
+    },
+    {
+      "id": "whitman-grass-1",
+      "poet": "Walt Whitman",
+      "title": "Song of Myself",
+      "text": "I believe a leaf of grass is no less than the journey-work of the stars,\nAnd the pismire is equally perfect, and a grain of sand,\nAnd the tree-toad is a chef-d'oeuvre for the highest,\nAnd the running blackberry would adorn the parlors of heaven.",
+      "source": "Leaves of Grass",
+      "year": "1855"
+    },
+    {
+      "id": "frost-woods-1",
+      "poet": "Robert Frost",
+      "title": "Stopping by Woods on a Snowy Evening",
+      "text": "The woods are lovely, dark and deep,\nBut I have promises to keep,\nAnd miles to go before I sleep,\nAnd miles to go before I sleep.",
+      "source": "New Hampshire",
+      "year": "1923"
+    },
+    {
+      "id": "emerson-nature-1",
+      "poet": "Ralph Waldo Emerson",
+      "title": "Nature",
+      "text": "To speak truly, few adult persons can see nature. Most persons do not see the sun. At least they have a very superficial seeing. The sun illuminates only the eye of the man, but shines into the eye and the heart of the child.",
+      "source": "Nature",
+      "year": "1836"
+    },
+    {
+      "id": "thoreau-walden-1",
+      "poet": "Henry David Thoreau",
+      "title": "Walden",
+      "text": "I went to the woods because I wished to live deliberately, to front only the essential facts of life, and see if I could not learn what it had to teach, and not, when I came to die, discover that I had not lived.",
+      "source": "Walden",
+      "year": "1854"
+    },
+    {
+      "id": "blake-eternity-1",
+      "poet": "William Blake",
+      "title": "Auguries of Innocence",
+      "text": "To see a World in a Grain of Sand\nAnd a Heaven in a Wild Flower,\nHold Infinity in the palm of your hand\nAnd Eternity in an hour.",
+      "source": "Public domain poetry",
+      "year": "1803"
+    },
+    {
+      "id": "basho-pond-1",
+      "poet": "Matsuo Bashō",
+      "title": "The Old Pond",
+      "text": "An old silent pond\nA frog jumps into the pond—\nSplash! Silence again.",
+      "source": "Public domain poetry",
+      "year": "1686"
+    },
+    {
+      "id": "poe-dream-1",
+      "poet": "Edgar Allan Poe",
+      "title": "A Dream Within a Dream",
+      "text": "All that we see or seem\nIs but a dream within a dream.",
+      "source": "Public domain poetry",
+      "year": "1849"
+    },
+    {
+      "id": "issa-dew-1",
+      "poet": "Kobayashi Issa",
+      "title": "The World of Dew",
+      "text": "The world of dew\nis the world of dew.\nAnd yet, and yet—",
+      "source": "Public domain poetry",
+      "year": "1827"
+    },
+    {
+      "id": "longfellow-psalm-1",
+      "poet": "Henry Wadsworth Longfellow",
+      "title": "A Psalm of Life",
+      "text": "Tell me not, in mournful numbers,\nLife is but an empty dream!\nFor the soul is dead that slumbers,\nAnd things are not what they seem.",
+      "source": "Voices of the Night",
+      "year": "1838"
+    },
+    {
+      "id": "keats-beauty-1",
+      "poet": "John Keats",
+      "title": "Endymion",
+      "text": "A thing of beauty is a joy for ever:\nIts loveliness increases; it will never\nPass into nothingness.",
+      "source": "Endymion",
+      "year": "1818"
+    },
+    {
+      "id": "wordsworth-daffodils-1",
+      "poet": "William Wordsworth",
+      "title": "I Wandered Lonely as a Cloud",
+      "text": "I wandered lonely as a cloud\nThat floats on high o'er vales and hills,\nWhen all at once I saw a crowd,\nA host, of golden daffodils.",
+      "source": "Public domain poetry",
+      "year": "1807"
+    },
+    {
+      "id": "shelley-ozymandias-1",
+      "poet": "Percy Bysshe Shelley",
+      "title": "Ozymandias",
+      "text": "Look on my Works, ye Mighty, and despair!\nNothing beside remains. Round the decay\nOf that colossal Wreck, boundless and bare\nThe lone and level sands stretch far away.",
+      "source": "Public domain poetry",
+      "year": "1818"
+    },
+    {
+      "id": "buson-spring-1",
+      "poet": "Yosa Buson",
+      "title": "Spring Rain",
+      "text": "Scampering over saucers—\nthe sound of a rat.\nCold, cold.",
+      "source": "Public domain poetry",
+      "year": "1783"
+    },
+    {
+      "id": "dickinson-nobody-1",
+      "poet": "Emily Dickinson",
+      "title": "I'm Nobody! Who are you?",
+      "text": "I'm Nobody! Who are you?\nAre you – Nobody – too?\nThen there's a pair of us!\nDon't tell! they'd advertise – you know!",
+      "source": "Public domain poetry",
+      "year": "1891"
+    },
+    {
+      "id": "byron-darkness-1",
+      "poet": "Lord Byron",
+      "title": "She Walks in Beauty",
+      "text": "She walks in beauty, like the night\nOf cloudless climes and starry skies;\nAnd all that's best of dark and bright\nMeet in her aspect and her eyes.",
+      "source": "Public domain poetry",
+      "year": "1815"
+    },
+    {
+      "id": "whitman-captain-1",
+      "poet": "Walt Whitman",
+      "title": "O Captain! My Captain!",
+      "text": "O Captain! my Captain! our fearful trip is done,\nThe ship has weather'd every rack, the prize we sought is won,\nThe port is near, the bells I hear, the people all exulting.",
+      "source": "Leaves of Grass",
+      "year": "1865"
+    },
+    {
+      "id": "teasdale-stars-1",
+      "poet": "Sara Teasdale",
+      "title": "There Will Come Soft Rains",
+      "text": "There will come soft rains and the smell of the ground,\nAnd swallows circling with their shimmering sound;\nAnd frogs in the pools singing at night,\nAnd wild plum trees in tremulous white.",
+      "source": "Public domain poetry",
+      "year": "1920"
+    },
+    {
+      "id": "tennyson-ulysses-1",
+      "poet": "Alfred Lord Tennyson",
+      "title": "Ulysses",
+      "text": "To strive, to seek, to find, and not to yield.",
+      "source": "Public domain poetry",
+      "year": "1842"
+    },
+    {
+      "id": "rumi-wound-1",
+      "poet": "Rumi",
+      "title": "The Wound",
+      "text": "The wound is the place where the Light enters you.",
+      "source": "Public domain translation",
+      "year": "1273"
+    },
+    {
+      "id": "rossetti-remember-1",
+      "poet": "Christina Rossetti",
+      "title": "Remember",
+      "text": "Better by far you should forget and smile\nThan that you should remember and be sad.",
+      "source": "Public domain poetry",
+      "year": "1862"
+    },
+    {
+      "id": "lowell-patterns-1",
+      "poet": "Amy Lowell",
+      "title": "Patterns",
+      "text": "I walk down the garden paths,\nAnd all the daffodils\nAre blowing, and the bright blue squills.\nI walk down the patterned garden-paths\nIn my stiff, brocaded gown.",
+      "source": "Men, Women and Ghosts",
+      "year": "1916"
+    },
+    {
+      "id": "burns-mouse-1",
+      "poet": "Robert Burns",
+      "title": "To a Mouse",
+      "text": "The best-laid schemes o' mice an' men\nGang aft agley,\nAn' lea'e us nought but grief an' pain,\nFor promis'd joy!",
+      "source": "Public domain poetry",
+      "year": "1785"
+    },
+    {
+      "id": "wilde-ballad-1",
+      "poet": "Oscar Wilde",
+      "title": "The Ballad of Reading Gaol",
+      "text": "Yet each man kills the thing he loves,\nBy each let this be heard,\nSome do it with a bitter look,\nSome with a flattering word.",
+      "source": "Public domain poetry",
+      "year": "1898"
+    },
+    {
+      "id": "gibran-prophet-1",
+      "poet": "Kahlil Gibran",
+      "title": "The Prophet",
+      "text": "Work is love made visible. And if you cannot work with love but only with distaste, it is better that you should leave your work and sit at the gate of the temple and take alms of those who work with joy.",
+      "source": "The Prophet",
+      "year": "1923"
+    },
+    {
+      "id": "hardy-darkling-1",
+      "poet": "Thomas Hardy",
+      "title": "The Darkling Thrush",
+      "text": "So little cause for carolings\nOf such ecstatic sound\nWas written on terrestrial things\nAfar or nigh around.",
+      "source": "Public domain poetry",
+      "year": "1900"
+    },
+    {
+      "id": "hafiz-light-1",
+      "poet": "Hafiz",
+      "title": "The Sun Never Says",
+      "text": "Even after all this time\nThe sun never says to the earth,\n'You owe me.'\nLook what happens with a love like that.\nIt lights the whole sky.",
+      "source": "Public domain translation",
+      "year": "1390"
+    },
+    {
+      "id": "millay-candle-1",
+      "poet": "Edna St. Vincent Millay",
+      "title": "First Fig",
+      "text": "My candle burns at both ends;\nIt will not last the night;\nBut ah, my foes, and oh, my friends—\nIt gives a lovely light!",
+      "source": "A Few Figs from Thistles",
+      "year": "1920"
+    },
+    {
+      "id": "libai-moon-1",
+      "poet": "Li Bai",
+      "title": "Quiet Night Thought",
+      "text": "Before my bed, the moon is shining bright,\nI think that it is frost upon the ground.\nI raise my head and look at the bright moon,\nI lower my head and think of home.",
+      "source": "Public domain translation",
+      "year": "735"
+    },
+    {
+      "id": "joyce-ulysses-1",
+      "poet": "James Joyce",
+      "title": "Ulysses",
+      "text": "Yes I said yes I will Yes.",
+      "source": "Ulysses",
+      "year": "1922"
+    }
+  ]
+}

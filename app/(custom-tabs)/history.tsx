@@ -6,7 +6,7 @@ import { useFocusEffect } from 'expo-router';
 import * as Clipboard from 'expo-clipboard';
 import * as Haptics from 'expo-haptics';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LiquidGlassBackground } from '@/components/LiquidGlassBackground';
+import { PoetryBackground } from '@/components/PoetryBackground';
 import { fontSize, spacing, borderRadius, minTouchSize, useFontSizeMode } from '@/utils/responsive';
 import type { HistoryItem } from './index';
 import { PoetryTheme } from '@/constants/Colors';
@@ -98,7 +98,7 @@ export default function HistoryScreen() {
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
       <StatusBar style="light" />
-      <LiquidGlassBackground />
+      <PoetryBackground />
       
       <View style={styles.header}>
         <Text style={styles.title}>History</Text>
@@ -209,6 +209,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   },
   scroll: {
     flex: 1,
+    zIndex: 2,
   },
   scrollContent: {
     padding: spacing(16),
