@@ -1,6 +1,6 @@
 import { Tabs } from 'expo-router';
 import React from 'react';
-import { Platform, Text, type ColorValue } from 'react-native';
+import { Platform, Text, View, type ColorValue } from 'react-native';
 import { Colors } from '@/constants/Colors';
 import { fontSize, useFontSizeMode } from '@/utils/responsive';
 
@@ -51,5 +51,9 @@ function TabIcon({ name, color }: { name: string; color: ColorValue }) {
     'house.fill': '🏠',
     'clock.fill': '🕐',
   };
-  return <Text style={{ fontSize: 28, color }}>{icons[name] || '❓'}</Text>;
+  return (
+    <View style={{ height: 32, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 28, color }}>{icons[name] || '❓'}</Text>
+    </View>
+  );
 }

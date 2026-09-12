@@ -107,10 +107,21 @@ export default function HomeScreen() {
   const buttonScale = useRef(new Animated.Value(1)).current;
   const buttonRotate = useRef(new Animated.Value(0)).current;
   const rollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
+  const scrollViewRef = useRef<ScrollView>(null);
 
   useEffect(() => {
     preloadOfflinePoems().catch(console.error);
   }, []);
+
+  // Auto-scroll to poetry card when new poetry loads
+  useEffect(() => {
+    if (poetry && scrollViewRef.current) {
+      // Small delay to ensure the card is rendered, then scroll to the poetry card
+      setTimeout(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+      }, 400);
+    }
+  }, [poetry]);
 
   useEffect(() => {
     if (isRolling) {
@@ -242,7 +253,7 @@ export default function HomeScreen() {
       <StatusBar style="light" />
       <LiquidGlassBackground />
       
-      <ScrollView style={styles.scroll} contentContainerStyle={styles.container}>
+      <ScrollView ref={scrollViewRef} style={styles.scroll} contentContainerStyle={styles.container}>
         <Text style={styles.title}>🎲 Poetry Dice</Text>
         <Text style={styles.subtitle}>Discover a random poem</Text>
         
@@ -359,6 +370,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   container: {
     flexGrow: 1,
     padding: spacing(16),
+    paddingBottom: spacing(100),
     alignItems: 'center',
     justifyContent: 'center',
   },
