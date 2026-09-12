@@ -305,7 +305,7 @@ export default function HomeScreen() {
             disabled={isRolling}
           >
           <LinearGradient
-            colors={PoetryTheme.accent.gradient}
+            colors={['#8b9db3', '#6d7f93']}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
             style={styles.buttonGradient}
@@ -578,7 +578,7 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     minHeight: minTouchSize(40),
   },
   segmentActive: {
-    backgroundColor: PoetryTheme.accent.primary,
+    backgroundColor: '#7d8fa3',
   },
   segmentText: {
     color: 'rgba(255,255,255,0.8)',
