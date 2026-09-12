@@ -2,12 +2,14 @@ import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect, useState, useRef } from 'react';
-import { ActivityIndicator, Animated, Dimensions, StyleSheet, Text } from 'react-native';
+import { ActivityIndicator, Animated, Dimensions, StyleSheet, Text, AppState, Linking } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { StatusBar } from 'expo-status-bar';
 import { loadFontSizeMode } from '@/utils/responsive';
 import { fontSize, spacing } from '@/utils/responsive';
 import { PoetryTheme } from '@/constants/Colors';
+import UpdateModal from '@/components/UpdateModal';
+import { checkForUpdate, shouldCheckForUpdate, skipVersion, remindLater, type UpdateInfo } from '@/utils/updateChecker';
 
 // Prevent the splash screen from auto-hiding before fonts are loaded
 SplashScreen.preventAutoHideAsync();
@@ -21,6 +23,9 @@ export default function RootLayout() {
   });
   const [fontSizeLoaded, setFontSizeLoaded] = useState(false);
   const [booting, setBooting] = useState(true);
+  const [updateInfo, setUpdateInfo] = useState<UpdateInfo | null>(null);
+  const [showUpdateModal, setShowUpdateModal] = useState(false);
+  const appState = useRef(AppState.currentState);
 
   // Fancy loader animations
   const bandWidth = 240;
@@ -68,6 +73,94 @@ export default function RootLayout() {
     }
   }, [loaded, fontSizeLoaded]);
 
+  // Function to perform update check (used both on boot and resume)
+  const performUpdateCheck = async () => {
+    try {
+      // ===== TEST MODE: Uncomment to always show the update modal for testing =====
+      // const testMode = true; // Set to false to disable test mode
+      // if (testMode) {
+      //   setUpdateInfo({
+      //     isUpdateAvailable: true,
+      //     currentVersion: '1.0.2',
+      //     latestVersion: '1.0.3',
+      //     releaseNotes: 'New Features:\n• Auto-scroll to poetry after roll\n• Fixed tab icon alignment\n• Improved network handling\n• Bug fixes and performance improvements',
+      //     updateUrl: 'itms-apps://apps.apple.com/us/app/poetry-dice/id[your-app-id]'
+      //   });
+      //   setShowUpdateModal(true);
+      //   return;
+      // }
+      // ===== END TEST MODE =====
+      
+      const shouldCheck = await shouldCheckForUpdate();
+      if (shouldCheck) {
+        const update = await checkForUpdate();
+        if (update && update.isUpdateAvailable) {
+          setUpdateInfo(update);
+          setShowUpdateModal(true);
+        }
+      }
+    } catch (error) {
+      console.log('[RootLayout] Error checking for update:', error);
+    }
+  };
+
+  // Check for app updates after booting completes
+  useEffect(() => {
+    if (!booting) {
+      // Delay check by 2 seconds after boot to let app settle
+      const timer = setTimeout(performUpdateCheck, 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [booting]);
+
+  // Check for updates when app resumes from background
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', async (nextAppState) => {
+      // When app comes to foreground from background
+      if (appState.current.match(/inactive|background/) && nextAppState === 'active') {
+        // Don't show modal if already visible
+        if (!showUpdateModal) {
+          await performUpdateCheck();
+        }
+      }
+      appState.current = nextAppState;
+    });
+
+    return () => {
+      subscription.remove();
+    };
+  }, [showUpdateModal]);
+
+  const handleUpdateNow = async () => {
+    if (updateInfo?.updateUrl) {
+      try {
+        const canOpen = await Linking.canOpenURL(updateInfo.updateUrl);
+        if (canOpen) {
+          await Linking.openURL(updateInfo.updateUrl);
+        } else {
+          console.log('[RootLayout] Cannot open App Store URL (normal in simulator)');
+          // On a real device, this will work fine
+        }
+      } catch (error) {
+        console.log('[RootLayout] App Store not available (simulator only)', error);
+      }
+    }
+    setShowUpdateModal(false);
+  };
+
+  const handleLater = async () => {
+    // Set reminder for 2 hours from now
+    await remindLater();
+    setShowUpdateModal(false);
+  };
+
+  const handleSkip = async () => {
+    if (updateInfo?.latestVersion) {
+      await skipVersion(updateInfo.latestVersion);
+    }
+    setShowUpdateModal(false);
+  };
+
   const diceStyle = {
     transform: [{ scale: diceScale }],
   };
@@ -108,9 +201,18 @@ export default function RootLayout() {
   }
 
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(custom-tabs)" />
-    </Stack>
+    <>
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(custom-tabs)" />
+      </Stack>
+      <UpdateModal
+        visible={showUpdateModal}
+        updateInfo={updateInfo}
+        onUpdateNow={handleUpdateNow}
+        onLater={handleLater}
+        onSkip={handleSkip}
+      />
+    </>
   );
 }
 
