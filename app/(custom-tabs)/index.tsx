@@ -108,6 +108,7 @@ export default function HomeScreen() {
   const buttonRotate = useRef(new Animated.Value(0)).current;
   const rollTimer = useRef<ReturnType<typeof setInterval> | null>(null);
   const scrollViewRef = useRef<ScrollView>(null);
+  const poetryCardRef = useRef<View>(null);
 
   useEffect(() => {
     preloadOfflinePoems().catch(console.error);
@@ -115,10 +116,19 @@ export default function HomeScreen() {
 
   // Auto-scroll to poetry card when new poetry loads
   useEffect(() => {
-    if (poetry && scrollViewRef.current) {
-      // Small delay to ensure the card is rendered, then scroll to the poetry card
+    if (poetry && scrollViewRef.current && poetryCardRef.current) {
+      // Small delay to ensure the card is rendered, then measure and scroll to it
       setTimeout(() => {
-        scrollViewRef.current?.scrollToEnd({ animated: true });
+        poetryCardRef.current?.measureLayout(
+          scrollViewRef.current as any,
+          (x, y) => {
+            scrollViewRef.current?.scrollTo({ y: y - 100, animated: true });
+          },
+          () => {
+            // Fallback if measureLayout fails
+            scrollViewRef.current?.scrollToEnd({ animated: true });
+          }
+        );
       }, 400);
     }
   }, [poetry]);
@@ -335,7 +345,7 @@ export default function HomeScreen() {
         )}
         
         {poetry && (
-          <View style={styles.card}>
+          <View ref={poetryCardRef} style={styles.card}>
             <Text style={styles.poetName}>{poetry.poet}</Text>
             <Text style={styles.title2}>{poetry.title}</Text>
             <Text style={styles.sourceText}>{poetry.source}</Text>
