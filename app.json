@@ -20,6 +20,7 @@
         "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#E6F4FE"
       },
+      "package": "com.drewesk.poetrydicenative",
       "predictiveBackGestureEnabled": false
     },
     "web": {
