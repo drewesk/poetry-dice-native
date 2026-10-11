@@ -1,9 +1,11 @@
-import React, { useState, useRef, useEffect, useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share, ScrollView } from 'react-native';
+import React, { useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Animated, Share, ScrollView, LayoutAnimation, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { StatusBar } from 'expo-status-bar';
 import { LinearGradient } from 'expo-linear-gradient';
-// import { Accelerometer } from 'expo-sensors';
+import { Accelerometer } from 'expo-sensors';
+import Constants from 'expo-constants';
+import { useFocusEffect } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import * as Clipboard from 'expo-clipboard';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -15,6 +17,25 @@ import { useNetworkStatus } from '@/hooks/useNetworkStatus';
 import { preloadOfflinePoems } from '@/lib/offline-api';
 
 const HISTORY_KEY = '@poetry_dice_history';
+const WELCOME_STORAGE_KEY = '@poetry_dice_welcome_v1';
+const WELCOME_COOLDOWN_MS = 7 * 24 * 60 * 60 * 1000;
+const WELCOME_OPEN_THRESHOLD = 5;
+const SHAKE_ENABLED_STORAGE_KEY = '@poetry_dice_shake_enabled';
+const SHAKE_TOOLTIP_STORAGE_KEY = '@poetry_dice_shake_tooltip_v3';
+
+type WelcomeState = {
+  lastSeenAppVersion: string | null;
+  lastShownAt: number | null;
+  opensSinceLastShow: number;
+};
+
+function createDefaultWelcomeState(): WelcomeState {
+  return {
+    lastSeenAppVersion: null,
+    lastShownAt: null,
+    opensSinceLastShow: 0,
+  };
+}
 
 export interface HistoryItem extends PoetryExcerpt {
   rollId: string;
@@ -96,9 +117,12 @@ export default function HomeScreen() {
   const [isRolling, setIsRolling] = useState(false);
   const [rollError, setRollError] = useState<string | null>(null);
   const [showSettings, setShowSettings] = useState(false);
-  // Shake-to-roll is intentionally paused until the UI tells users this gesture exists.
-  // Re-enable the commented Accelerometer import/ref/effect and add NSMotionUsageDescription when bringing it back.
-  // const lastShakeTime = useRef(0);
+  const [showWelcome, setShowWelcome] = useState(false);
+  const [shakeEnabled, setShakeEnabled] = useState(true);
+  const [shakePreferenceLoaded, setShakePreferenceLoaded] = useState(false);
+  const [showShakeTooltip, setShowShakeTooltip] = useState(false);
+  const lastShakeTime = useRef(0);
+  const appVersion = Constants.expoConfig?.version ?? Constants.nativeAppVersion ?? 'unknown';
   const { fontSizeMode, setFontSizeMode, fontScaleMultiplier } = useFontSizeMode();
   const styles = useMemo(() => createStyles(fontScaleMultiplier), [fontScaleMultiplier]);
   const networkStatus = useNetworkStatus();
@@ -113,6 +137,136 @@ export default function HomeScreen() {
   useEffect(() => {
     preloadOfflinePoems().catch(console.error);
   }, []);
+
+  const loadWelcomeState = useCallback(async (): Promise<WelcomeState> => {
+    try {
+      const stored = await AsyncStorage.getItem(WELCOME_STORAGE_KEY);
+      if (!stored) return createDefaultWelcomeState();
+      const parsed = JSON.parse(stored) as Partial<WelcomeState>;
+      return {
+        lastSeenAppVersion: typeof parsed.lastSeenAppVersion === 'string' ? parsed.lastSeenAppVersion : null,
+        lastShownAt: typeof parsed.lastShownAt === 'number' ? parsed.lastShownAt : null,
+        opensSinceLastShow: typeof parsed.opensSinceLastShow === 'number' ? parsed.opensSinceLastShow : 0,
+      };
+    } catch {
+      return createDefaultWelcomeState();
+    }
+  }, []);
+
+  const persistWelcomeState = useCallback(async (state: WelcomeState) => {
+    try {
+      await AsyncStorage.setItem(WELCOME_STORAGE_KEY, JSON.stringify(state));
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const syncWelcomeState = async () => {
+      const stored = await loadWelcomeState();
+      const next = {
+        ...stored,
+        lastSeenAppVersion: appVersion,
+        opensSinceLastShow: stored.opensSinceLastShow + 1,
+      };
+      const versionChanged = stored.lastSeenAppVersion !== null && stored.lastSeenAppVersion !== appVersion;
+      const firstInstall = stored.lastShownAt === null;
+      const cooldownElapsed = stored.lastShownAt !== null && Date.now() - stored.lastShownAt >= WELCOME_COOLDOWN_MS;
+      const shouldShow = firstInstall || versionChanged || (cooldownElapsed && next.opensSinceLastShow >= WELCOME_OPEN_THRESHOLD);
+      setShowWelcome(shouldShow);
+      await persistWelcomeState(next);
+    };
+    void syncWelcomeState();
+  }, [appVersion, loadWelcomeState, persistWelcomeState]);
+
+  const loadShakeEnabled = useCallback(async () => {
+    try {
+      const stored = await AsyncStorage.getItem(SHAKE_ENABLED_STORAGE_KEY);
+      return stored === null ? true : stored === 'true';
+    } catch {
+      return true;
+    }
+  }, []);
+
+  const persistShakeEnabled = useCallback(async (enabled: boolean) => {
+    try {
+      await AsyncStorage.setItem(SHAKE_ENABLED_STORAGE_KEY, enabled.toString());
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    loadShakeEnabled()
+      .then((enabled) => {
+        setShakeEnabled(enabled);
+        setShakePreferenceLoaded(true);
+      })
+      .catch(() => setShakePreferenceLoaded(true));
+  }, [loadShakeEnabled]);
+
+  // Progressive shake tooltip: first launch, 7 days, 30 days, then never
+  useEffect(() => {
+    if (!shakePreferenceLoaded) return;
+    if (!shakeEnabled) {
+      setShowShakeTooltip(false);
+      return;
+    }
+
+    let cancelled = false;
+    let initialTimer: ReturnType<typeof setTimeout> | null = null;
+    let hideTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const scheduleShow = (showCount: number) => {
+      initialTimer = setTimeout(() => {
+        if (cancelled) return;
+        setShowShakeTooltip(true);
+        hideTimer = setTimeout(() => {
+          if (cancelled) return;
+          setShowShakeTooltip(false);
+          AsyncStorage.setItem(
+            SHAKE_TOOLTIP_STORAGE_KEY,
+            JSON.stringify({ lastShown: Date.now(), showCount })
+          ).catch(() => {});
+        }, 4000);
+      }, 2000);
+    };
+
+    const check = async () => {
+      try {
+        const data = await AsyncStorage.getItem(SHAKE_TOOLTIP_STORAGE_KEY);
+        if (cancelled) return;
+        if (!data) {
+          scheduleShow(1);
+        } else {
+          const { lastShown, showCount } = JSON.parse(data);
+          const daysSince = (Date.now() - lastShown) / (1000 * 60 * 60 * 24);
+          if (showCount === 1 && daysSince >= 7) scheduleShow(2);
+          else if (showCount === 2 && daysSince >= 30) scheduleShow(3);
+        }
+      } catch {}
+    };
+
+    check();
+    return () => {
+      cancelled = true;
+      if (initialTimer) clearTimeout(initialTimer);
+      if (hideTimer) clearTimeout(hideTimer);
+    };
+  }, [shakeEnabled, shakePreferenceLoaded]);
+
+  const handleShakeToggle = useCallback((enabled: boolean) => {
+    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
+    setShakeEnabled(enabled);
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    void persistShakeEnabled(enabled);
+  }, [persistShakeEnabled]);
+
+  const dismissWelcome = useCallback(() => {
+    setShowWelcome(false);
+    void persistWelcomeState({
+      lastSeenAppVersion: appVersion,
+      lastShownAt: Date.now(),
+      opensSinceLastShow: 0,
+    });
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+  }, [appVersion, persistWelcomeState]);
 
   // Auto-scroll to poetry card when new poetry loads
   useEffect(() => {
@@ -233,30 +387,30 @@ export default function HomeScreen() {
     } catch {}
   };
 
-  // Accelerometer for shake-to-roll.
-  // Temporarily commented out because Poetry Dice does not currently explain this gesture to users.
-  // useEffect(() => {
-  //   Accelerometer.setUpdateInterval(100);
-  //
-  //   const subscription = Accelerometer.addListener(({ x, y, z }) => {
-  //     const acceleration = Math.sqrt(x * x + y * y + z * z);
-  //     const now = Date.now();
-  //
-  //     // Shake threshold: 1.5 g-force, Debounce: 500ms
-  //     if (acceleration > 1.5 && !isRolling && now - lastShakeTime.current > 500) {
-  //       lastShakeTime.current = now;
-  //       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
-  //         .then(() => new Promise(resolve => setTimeout(resolve, 100)))
-  //         .then(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
-  //         .catch(() => {});
-  //       onRoll();
-  //     }
-  //   });
-  //
-  //   return () => {
-  //     subscription && subscription.remove();
-  //   };
-  // }, [isRolling]);
+  // Shake-to-roll - only active when Home tab is focused and shake is enabled
+  useFocusEffect(
+    useCallback(() => {
+      let subscription: any;
+      if (shakePreferenceLoaded && shakeEnabled) {
+        Accelerometer.setUpdateInterval(100);
+        subscription = Accelerometer.addListener(({ x, y, z }) => {
+          const acceleration = Math.sqrt(x * x + y * y + z * z);
+          const now = Date.now();
+          if (acceleration > 1.5 && !isRolling && now - lastShakeTime.current > 500) {
+            lastShakeTime.current = now;
+            Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy)
+              .then(() => new Promise((resolve) => setTimeout(resolve, 100)))
+              .then(() => Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Heavy))
+              .catch(() => {});
+            onRoll();
+          }
+        });
+      }
+      return () => {
+        subscription && subscription.remove();
+      };
+    }, [isRolling, shakeEnabled, shakePreferenceLoaded])
+  );
 
   return (
     <SafeAreaView style={styles.safeArea} edges={['top', 'left', 'right']}>
@@ -297,6 +451,19 @@ export default function HomeScreen() {
                   </Pressable>
                 );
               })}
+            </View>
+
+            <View style={styles.settingsDivider} />
+            <Text style={styles.settingsSectionLabel}>Shake to Roll</Text>
+            <View style={styles.settingsSwitchRow}>
+              <Text style={styles.settingsRowLabel}>Enable shake gesture</Text>
+              <Switch
+                value={shakeEnabled}
+                onValueChange={handleShakeToggle}
+                trackColor={{ false: 'rgba(255,255,255,0.25)', true: 'rgba(139, 157, 179, 0.65)' }}
+                thumbColor={shakeEnabled ? '#fff' : '#f4f3f4'}
+                ios_backgroundColor="rgba(255,255,255,0.25)"
+              />
             </View>
           </View>
         )}
@@ -364,6 +531,48 @@ export default function HomeScreen() {
         
         <Text style={styles.credit}>App inspired by James Lalonde</Text>
       </ScrollView>
+
+      {showWelcome && (
+        <View style={styles.popupBackdrop}>
+          <View style={styles.popupCard}>
+            <View style={styles.popupContent}>
+              <View style={styles.popupIconContainer}>
+                <LinearGradient
+                  colors={['#8b9db3', '#6d7f93']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.popupIconGradient}
+                >
+                  <Text style={styles.popupIcon}>🎲</Text>
+                </LinearGradient>
+              </View>
+              <Text style={styles.popupTitle}>Welcome to Poetry Dice!</Text>
+              <Pressable
+                style={({ pressed }) => [styles.popupButton, pressed && { opacity: 0.8, transform: [{ scale: 0.95 }] }]}
+                onPress={dismissWelcome}
+                hitSlop={10}
+              >
+                <LinearGradient
+                  colors={['#8b9db3', '#6d7f93']}
+                  start={{ x: 0, y: 0 }}
+                  end={{ x: 1, y: 1 }}
+                  style={styles.popupButtonGradient}
+                >
+                  <Text style={styles.popupButtonText}>Get Started</Text>
+                </LinearGradient>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showShakeTooltip && (
+        <View style={styles.shakeTooltip}>
+          <View style={styles.shakeTooltipInner}>
+            <Text style={styles.shakeTooltipText}>🤳 Shake to roll!</Text>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }
@@ -610,6 +819,25 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
   segmentTextActive: {
     color: '#1a1a1a',
   },
+  settingsDivider: {
+    height: 1,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    marginVertical: spacing(14),
+  },
+  settingsSwitchRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    minHeight: minTouchSize(44),
+    gap: spacing(12),
+  },
+  settingsRowLabel: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: fontSize(16),
+    fontFamily: 'Arsenal-Regular',
+    flexShrink: 1,
+    paddingRight: spacing(8),
+  },
   offlineIndicator: {
     paddingHorizontal: spacing(12),
     paddingVertical: spacing(6),
@@ -621,5 +849,101 @@ const createStyles = (fontScaleMultiplier: number) => StyleSheet.create({
     color: '#1a1a1a',
     fontSize: fontSize(12),
     fontWeight: '700',
+  },
+  popupBackdrop: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    zIndex: 9999,
+  },
+  popupCard: {
+    width: '88%',
+    maxWidth: 400,
+    borderRadius: borderRadius(24),
+    overflow: 'hidden',
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'rgba(45, 58, 74, 0.98)',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 20 },
+    shadowRadius: 40,
+    shadowOpacity: 0.5,
+    elevation: 20,
+  },
+  popupContent: {
+    padding: spacing(32),
+    alignItems: 'center',
+  },
+  popupIconContainer: {
+    marginBottom: spacing(20),
+    borderRadius: borderRadius(30),
+    overflow: 'hidden',
+  },
+  popupIconGradient: {
+    width: 80,
+    height: 80,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  popupIcon: {
+    fontSize: fontSize(40),
+  },
+  popupTitle: {
+    color: '#fff',
+    fontWeight: '800',
+    fontSize: fontSize(26),
+    marginBottom: spacing(12),
+    textAlign: 'center',
+    fontFamily: 'Arsenal-Bold',
+  },
+  popupMessage: {
+    color: 'rgba(255,255,255,0.95)',
+    textAlign: 'center',
+    fontSize: fontSize(16),
+    lineHeight: fontSize(24),
+    marginBottom: spacing(24),
+    fontFamily: 'Arsenal-Regular',
+  },
+  popupButton: {
+    width: '100%',
+    borderRadius: borderRadius(16),
+    overflow: 'hidden',
+  },
+  popupButtonGradient: {
+    paddingVertical: spacing(16),
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  popupButtonText: {
+    color: '#fff',
+    fontWeight: '700',
+    fontSize: fontSize(18),
+    fontFamily: 'Arsenal-Bold',
+  },
+  shakeTooltip: {
+    position: 'absolute',
+    bottom: spacing(120),
+    left: 0,
+    right: 0,
+    alignItems: 'center',
+    zIndex: 9998,
+  },
+  shakeTooltipInner: {
+    paddingHorizontal: spacing(18),
+    paddingVertical: spacing(10),
+    borderRadius: borderRadius(20),
+    backgroundColor: 'rgba(0,0,0,0.75)',
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.25)',
+  },
+  shakeTooltipText: {
+    color: '#fff',
+    fontSize: fontSize(14),
+    fontFamily: 'Arsenal-Bold',
   },
 });

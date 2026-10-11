@@ -12,7 +12,8 @@
       "buildNumber": "7",
       "supportsTablet": true,
       "infoPlist": {
-        "ITSAppUsesNonExemptEncryption": false
+        "ITSAppUsesNonExemptEncryption": false,
+        "NSMotionUsageDescription": "Poetry Dice uses motion to detect a shake gesture so you can shake your device to roll for a new poem."
       }
     },
     "android": {
